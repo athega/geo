@@ -15,6 +15,9 @@ import java.net.URL;
 
 /**
  * Originally created by @author chrliz at 2013-04-11 13:13
+ *
+ * Note. Check http://dev.maxmind.com/static/csv/codes/maxmind/region.csv
+ * for region codes -> names.
  */
 public class GeoServlet extends HttpServlet {
 	private static final Logger LOG = Logger.getLogger(GeoServlet.class);
@@ -41,7 +44,11 @@ public class GeoServlet extends HttpServlet {
 				ip = request.getRemoteAddr();
 			}
 
-			if (isNorrlandByIp(ip)) {
+			final String servletPath = request.getServletPath();
+			if (
+					("/is-norrland".equals(servletPath) && isNorrlandByIp(ip) ||
+					("/is-skane").equals(servletPath) && isSkaneByIp(ip))
+				) {
 				response.setContentType("image/gif");
 				response.getOutputStream().write(PIXEL_BYTES);
 			} else {
@@ -81,9 +88,26 @@ public class GeoServlet extends HttpServlet {
 				}
 			}
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(ip + ":" + (location != null ? " location " + location.countryCode + "-" + location.region + ":" + isNorrland : "null"));
+				LOG.debug("[isNorrland] " + ip + ":" + (location != null ? " location " + location.countryCode + "-" + location.region + ":" + isNorrland : "null"));
 			}
 		}
 		return isNorrland;
+	}
+
+	private boolean isSkaneByIp(final String ip) {
+		boolean isSkane = false;
+		if (lookup != null) {
+			final Location location = lookup.getLocation(ip);
+			if (location != null && "SE".equals(location.countryCode) && location.region != null) {
+				final String region = location.region;
+				if ("27".equals(region)) { // Skåne
+					isSkane = true;
+				}
+			}
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[isSkane] " + ip + ":" + (location != null ? " location " + location.countryCode + "-" + location.region + ":" + isSkane : "null"));
+			}
+		}
+		return isSkane;
 	}
 }

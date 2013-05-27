@@ -11,6 +11,7 @@
 	<servlet-mapping>
 		<servlet-name>geo</servlet-name>
 		<url-pattern>/is-norrland</url-pattern>
+		<url-pattern>/is-skane</url-pattern>
 	</servlet-mapping>
 
 </web-app>
